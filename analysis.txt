@@ -1,0 +1,17 @@
+
+
+
+// fork()
+1511613310.711115384 0.000120187 sh triton8 16162 7f36c7c1d700 fork 16164 16162 1 // fork pid=fork() getpid()는 함수호출한 프로세스 getpid() 는 부모프로세스
+1511613310.711115384 0.000246974 sh triton8 16164 7f36c7c1d700 fork 0 16164 16162
+
+// read()
+1511613310.713962064 0.000003697 sh triton8 16162 7f36c7c1d700 read 1865(읽은 데이터 크기) 10(fd) NON_SOCKET en\n       sctl_args="--job-mode=ignore-dependencies"\n   fi\n\n   case "${ACTION}" in\n      restart|status)\n         exec systemctl $sctl_args ${ACTION} ${UNIT}\n      ;;\n      start|stop)\n         # Follow the principle of least surprise for SysV people:\n         # When running "service foo stop" and foo happens to be a service that\n         # has one or more .socket files, we also stop the .socket units.\n         # Users who need more control will use systemctl directly.\n         for unit in $(systemctl list-unit-files --full --type=socket 2>/dev/null | sed -ne 's/\.socket\s*[a-z]*\s*$/.socket/p'); do\n             if [ "$(systemctl -p Triggers show $unit)" = "Triggers=${UNIT}" ]; then\n                systemctl $sctl_args ${ACTION} $unit\n             fi\n         done\n         exec systemctl $sctl_args ${ACTION} ${UNIT}\n      ;;\n      reload)\n         _canreload="$(systemctl -p CanReload show ${UNIT} 2>/dev/null)"\n         if [ "$_canreload" = "CanReload=no" ]; then\n            # The reload action falls back to the sysv init script just in case\n            # the systemd service file does not (yet) support reload for a\n            # specific service.\n            run_via_sysvinit\n         else\n            exec systemctl $sctl_args reload "${UNIT}"\n         fi\n         ;;\n      force-stop)\n         exec systemctl --signal=KILL kill "${UNIT}"\n         ;;\n      force-reload)\n         _canreload="$(systemctl -p CanReload show ${UNIT} 2>/dev/null)"\n         if [ "$_canreload" = "CanReload=no" ]; then\n            exec systemctl $sctl_args restart "${UNIT}"\n         else\n            exec systemctl $sctl_args reload "${UNIT}"\n         fi\n         ;;\n      *)\n         # We try to run non-standard actions by running\n         # the init script directly.\n         run_via_sysvinit\n         ;;\n   esac\nfi\n\nupdate_openrc_started_symlinks\nrun_via_sysvinit\n
+
+
+//sendmsg()
+1511613310.716836633 0.000007773 systemctl triton8 16165 7faa1a8dd880 sendmsg 45(보낸 데이터 크기) 5(fd) AF_FILE /run/systemd/private .AUTH EXTERNAL 30\r\nNEGOTIATE_UNIX_FD\r\nBEGIN\r\n
+
+
+1511613310.716928258 0.000001997 systemctl triton8 16165 7faa1a8dd880 recvmsg -1 5 AF_FILE /run/systemd/private  EAGAIN
+1511613310.718451984 0.000005241 systemctl triton8 16165 7faa1a8dd880 recvmsg 52 5 AF_FILE /run/systemd/private OK 8ffdba5681264953852c4bd6ff08c7d9\r\nAGREE_UNIX_FD\r\n
