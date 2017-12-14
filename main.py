@@ -30,8 +30,8 @@ def getDataTimeFromFloatString(timeString):
 
 print(getDataTimeFromFloatString("1511836367.231953949"))
 
-x_all_value = [] # x 축
-y_all_value = []
+x_all_values = [] # x 축
+y_all_values = []
 contents = []
 
 filename = "mongod_start_insert_find_kill_origin.txt"
@@ -43,10 +43,10 @@ fig1 = plt.figure(1)
 
 ax1 = plt.subplot(211) # e.g 121 -> 1x2 matrix 중에 1
 points_with_annotation = []
-line_number = 0 ;
+line_number = 0
 
 while True:
-    line_number = line_number +1
+    line_number = line_number + 1
     line = f.readline().split() # 한 줄씩 읽습니다. 공백을 기준으로 line[] 배열에 문자열들을 차례로 저장합니다.
     if not line: # 더이상 line 이 없으면 반복문을 종료
         break
@@ -83,38 +83,36 @@ while True:
                 annotation_description += "".join(data_content) + ", \n"
 
 
-
-
-        if line_number <10 : #10 줄만 출력해봅시다
-            print(annotation_description)
+        # x_value = Decimal(time) #<= 이거 왜 안되노 !
+        x_value = line_number
 
         #전체 x, y 값 배열
-        x_all_value.append(line_number)
-        y_all_value.append(y_value_thread_id)
+        x_all_values.append(x_value)
+        y_all_values.append(y_value_thread_id)
 
         # operation 인지에 따라 y 값의 색상 및 모양 달리 표현
         if "write" in line[6]:
-            point, = plt.plot(line_number, y_value_thread_id, 'ro', ms=7, lw=1, alpha=0.5, mfc='red')
+            point, = plt.plot(x_value, y_value_thread_id, 'ro', ms=7, lw=1, alpha=0.5, mfc='red')
 
         elif "read" in line[6]:
-            point, = plt.plot(line_number, y_value_thread_id,  'bo',  ms=7, lw=1, alpha=0.5, mfc='blue')
+            point, = plt.plot(x_value, y_value_thread_id, 'bo', ms=7, lw=1, alpha=0.5, mfc='blue')
 
         elif "send" in line[6]:
-            point, = plt.plot(line_number, y_value_thread_id, 'y>', ms=7, lw=1, alpha=0.5, mfc='orange')
+            point, = plt.plot(x_value, y_value_thread_id, 'y>', ms=7, lw=1, alpha=0.5, mfc='orange')
 
         elif "recv" in line[6]:
-            point, = plt.plot(line_number, y_value_thread_id,  'g>',  ms=7, lw=1, alpha=0.5, mfc='green')
+            point, = plt.plot(x_value, y_value_thread_id, 'g>', ms=7, lw=1, alpha=0.5, mfc='green')
         else:
-            point, = plt.plot(line_number, y_value_thread_id, 'yo', ms=7, lw=1, alpha=0.7, mfc='yellow')
+            point, = plt.plot(x_value, y_value_thread_id, 'yo', ms=7, lw=1, alpha=0.7, mfc='yellow')
 
-        print(fig1.get_size_inches() * fig1.dpi )
+        # print(fig1.get_size_inches() * fig1.dpi ) # get figure size
 
         # annotation
         # see: https://stackoverflow.com/questions/11537374/matplotlib-basemap-popup-box
         annotation = ax1.annotate(annotation_description,  # annotation message
-                                  xy=(line_number, y_value_thread_id), # annotation 화살표포함 location  => scatter 위치를 가르켜 주어야 함
+                                  xy=(x_value, y_value_thread_id),  # annotation 화살표포함 location  => scatter 위치를 가르켜 주어야 함
                                   xycoords='data',
-                                  xytext=(line_number-3, y_value_thread_id+15000000),  # text 표시 위치
+                                  xytext=(x_value - 3, y_value_thread_id + 15000000),  # text 표시 위치
                                   textcoords='data',
                                   horizontalalignment="left",
                                   # arrowprops=dict(arrowstyle="simple", connectionstyle="arc3,rad=0"),  # 화살표 스타일
@@ -145,28 +143,35 @@ plt.grid()
 
 #전체 차트
 ax2 = plt.subplot(212)
-plt.plot(x_all_value, y_all_value, '-o', ms=7, lw=1, alpha=0.7, mfc='red')
+plt.plot(x_all_values, y_all_values, '-o', ms=7, lw=1, alpha=0.7, mfc='red')
 plt.grid()
 
 
 
 axcolor = 'lightgoldenrodyellow'
 axpos = plt.axes([0.1, 0.01, 0.80, 0.03], axisbg=axcolor) # scroll 의 위치 [figure 창에서 가로시작 위치 비율, 세로시작 위치 비율, 가로 크기 비율 , 세로 크기 비율]
-spos = Slider(axpos, 'Scroll', 0.0, 700.0) # scroll 범위
+# spos = Slider(axpos, 'Scroll', 0.0, 700.0) # scroll 범위
+min_x_value = min(x_all_values)
+max_x_value = max(x_all_values)
+x_value_range = max_x_value - min_x_value
+print(min_x_value)
+print(max_x_value)
+print(x_value_range)
+scroll_position = Slider(axpos, 'Scroll', min_x_value - x_value_range / 600, max_x_value + x_value_range / 600) # scroll 범위
 
 def update(val):
-    pos = spos.val
-    min_y_value = min(y_all_value)
-    max_y_value = max(y_all_value)
+    pos = scroll_position.val
+    min_y_value = min(y_all_values)
+    max_y_value = max(y_all_values)
     range = max_y_value - min_y_value;
     #범위를 위아래로 10분의 1씩 더 늘려줍니다
     min_y_value = min_y_value - range/10
     max_y_value = max_y_value + range/10
-    ax1.axis([pos, pos+50, min_y_value, max_y_value]) # 한 화면에서 스크롤 양 옆 범위 / 위 아래 최소 최대 값
-    ax2.axis([pos, pos+50, min_y_value, max_y_value]) # 한 화면에서 스크롤 양 옆 범위 / 위 아래 최소 최대 값
+    ax1.axis([pos, pos + x_value_range/10, min_y_value, max_y_value]) # 한 화면에서 스크롤 양 옆 범위 / 위 아래 최소 최대 값
+    ax2.axis([pos, pos + x_value_range/10, min_y_value, max_y_value]) # 한 화면에서 스크롤 양 옆 범위 / 위 아래 최소 최대 값
     plt.figure(1).canvas.draw_idle()
 
-spos.on_changed(update)
+scroll_position.on_changed(update)
 
 plt.show() # 팝업 화면에 차트 띄우기
 
